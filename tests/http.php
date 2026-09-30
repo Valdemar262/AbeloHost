@@ -46,7 +46,7 @@ $check = static function (bool $condition, string $message) use (&$checks): void
 
 $home = request($baseUrl, '/');
 $check(
-    $home['status'] === 200 && str_contains($home['body'], 'Здесь начинается блог'),
+    $home['status'] === 200 && str_contains($home['body'], 'Блог о веб-разработке'),
     'Home must render through HTTP.',
 );
 $check(
@@ -79,5 +79,22 @@ $check(
     $post['status'] === 405 && str_contains($post['headers'], 'Allow: GET, HEAD'),
     'POST must return 405 and Allow.',
 );
+
+$category = request($baseUrl, '/category/php');
+$check($category['status'] === 200, 'Seeded categories must be reachable.');
+$check(substr_count($category['body'], 'data-post-id=') === 9, 'The first category page must contain nine posts.');
+$check(!str_contains($category['body'], 'future-blog-release'), 'Future posts must not appear.');
+$check(!str_contains($home['body'], 'data-category="notes"'), 'Empty categories must not appear on home.');
+$sorted = request($baseUrl, '/category/php?sort=views&page=2');
+$check($sorted['status'] === 200, 'The second sorted page must be reachable.');
+$check(str_contains($sorted['body'], 'sort=views&amp;page=1'), 'Pagination must preserve sorting.');
+$check(request($baseUrl, '/category/notes')['status'] === 200, 'An empty category must return 200.');
+$check(request($baseUrl, '/category/notes?page=2')['status'] === 404, 'An empty category has only one page.');
+$check(request($baseUrl, '/category/missing')['status'] === 404, 'An unknown category must return 404.');
+$check(request($baseUrl, '/category/php?page=999999')['status'] === 404, 'Out-of-range pages must return 404.');
+$check(request($baseUrl, '/category/php?page[]=2&sort[]=views')['status'] === 200, 'Array parameters must not crash.');
+$categoryHead = request($baseUrl, '/category/php', 'HEAD');
+$check($categoryHead['status'] === 200 && $categoryHead['body'] === '', 'Category HEAD must have no body.');
+$check(request($baseUrl, '/category/php', 'POST')['status'] === 405, 'Category POST must return 405.');
 
 fwrite(STDOUT, "HTTP checks passed: {$checks}.\n");

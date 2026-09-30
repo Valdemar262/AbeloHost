@@ -3,8 +3,12 @@
 declare(strict_types=1);
 
 use App\Controller\HomeController;
+use App\Controller\CategoryController;
+use App\Database;
 use App\Http\Response;
 use App\Http\Router;
+use App\Repository\CategoryRepository;
+use App\Repository\PostRepository;
 
 ini_set('display_errors', '0');
 ini_set('log_errors', '1');
@@ -22,7 +26,17 @@ $response = null;
 try {
     $app = require dirname(__DIR__) . '/config/bootstrap.php';
     $router = new Router($app['view']);
-    $router->get('/', [new HomeController($app['view']), 'index']);
+    $router->get('/', static function () use ($app): Response {
+        $pdo = Database::connect($app['config']['database']);
+
+        return (new HomeController($app['view'], new CategoryRepository($pdo)))->index();
+    });
+    $router->get('/category/{slug}', static function (array $parameters, array $query) use ($app): Response {
+        $pdo = Database::connect($app['config']['database']);
+        $controller = new CategoryController($app['view'], new CategoryRepository($pdo), new PostRepository($pdo));
+
+        return $controller->index($parameters['slug'], $query);
+    });
     $response = $router->dispatch(
         $_SERVER['REQUEST_METHOD'] ?? 'GET',
         $_SERVER['REQUEST_URI'] ?? '/',

@@ -26,6 +26,52 @@ final class PostRepository
         return $statement->fetch() ?: null;
     }
 
+    public function countPublishedInCategory(int $categoryId, string $publishedBefore): int
+    {
+        $statement = $this->pdo->prepare(<<<'SQL'
+            SELECT COUNT(*)
+            FROM posts p
+            JOIN post_category pc ON pc.post_id = p.id
+            WHERE pc.category_id = :category_id AND p.published_at <= :published_before
+            SQL);
+        $statement->execute(['category_id' => $categoryId, 'published_before' => $publishedBefore]);
+
+        return (int) $statement->fetchColumn();
+    }
+
+    public function findPublishedByCategory(
+        int $categoryId,
+        string $publishedBefore,
+        string $sort,
+        int $limit,
+        int $offset,
+    ): array {
+        if ($limit < 1 || $limit > 100 || $offset < 0) {
+            throw new InvalidArgumentException('Invalid pagination bounds.');
+        }
+
+        $orderBy = match ($sort) {
+            'date' => 'p.published_at DESC, p.id DESC',
+            'views' => 'p.views DESC, p.published_at DESC, p.id DESC',
+            default => throw new InvalidArgumentException('Unsupported post sorting.'),
+        };
+        $statement = $this->pdo->prepare(<<<SQL
+            SELECT p.id, p.slug, p.image_path, p.title, p.description, p.published_at, p.views
+            FROM posts p
+            JOIN post_category pc ON pc.post_id = p.id
+            WHERE pc.category_id = :category_id AND p.published_at <= :published_before
+            ORDER BY {$orderBy}
+            LIMIT :limit OFFSET :offset
+            SQL);
+        $statement->bindValue('category_id', $categoryId, PDO::PARAM_INT);
+        $statement->bindValue('published_before', $publishedBefore);
+        $statement->bindValue('limit', $limit, PDO::PARAM_INT);
+        $statement->bindValue('offset', $offset, PDO::PARAM_INT);
+        $statement->execute();
+
+        return $statement->fetchAll();
+    }
+
     public function create(array $post, array $categoryIds): int
     {
         if ($categoryIds === []) {
