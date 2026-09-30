@@ -21,10 +21,13 @@
         }
     },
     "scripts": {
-        "lint": "find bin config public src tests -name '*.php' -print0 | xargs -0 -n1 php -l",
+        "lint": "find bin config database public src tests -name '*.php' -print0 | xargs -0 -n1 php -l",
         "serve": "php -d display_errors=0 -S 127.0.0.1:8080 -t public public/router.php",
         "check-db": "@php bin/check-db.php",
+        "migrate": "@php bin/migrate.php",
+        "seed": "@php bin/seed.php",
         "test": "@php tests/foundation.php",
+        "test:database": "@php tests/database.php",
         "test:http": "@php tests/http.php"
     }
 }

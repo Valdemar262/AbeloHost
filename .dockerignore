@@ -6,6 +6,8 @@
 !bin/**
 !config/
 !config/**
+!database/
+!database/**
 !docker/
 !docker/**
 !public/
