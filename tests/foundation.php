@@ -2,14 +2,20 @@
 
 declare(strict_types=1);
 
-use App\Controller\HomeController;
+use App\Http\Response;
 use App\Database;
 use App\Http\Router;
 
 $app = require dirname(__DIR__) . '/config/bootstrap.php';
 $view = $app['view'];
 $router = new Router($view);
-$router->get('/', [new HomeController($view), 'index']);
+$router->get('/', static fn (): Response => new Response($view->render('pages/home.tpl', [
+    'pageTitle' => 'Главная',
+    'categories' => [],
+])));
+$router->get('/category/{slug}', static fn (array $parameters, array $query): Response => new Response(
+    json_encode(['slug' => $parameters['slug'], 'query' => $query], JSON_THROW_ON_ERROR),
+));
 $checks = 0;
 
 $check = static function (bool $condition, string $message) use (&$checks): void {
@@ -22,7 +28,7 @@ $check = static function (bool $condition, string $message) use (&$checks): void
 
 $home = $router->dispatch('GET', '/?page=1');
 $check($home->status === 200, 'Home page must accept a query string.');
-$check(str_contains($home->body, 'Здесь начинается блог'), 'Smarty must render the home page.');
+$check(str_contains($home->body, 'Блог о веб-разработке'), 'Smarty must render the home page.');
 $check(!str_contains($home->body, '{block'), 'Template syntax must not reach the response.');
 $check($router->dispatch('GET', '/missing')->status === 404, 'Unknown routes must return 404.');
 $check($router->dispatch('GET', '/config/app.php')->status === 404, 'Internal files must not be routed.');
@@ -30,6 +36,13 @@ $check($router->dispatch('GET', '//')->status === 404, 'Malformed paths must not
 $post = $router->dispatch('POST', '/');
 $check($post->status === 405 && $post->headers['Allow'] === 'GET, HEAD', 'POST must return 405 and Allow.');
 $check($router->dispatch('HEAD', '/')->status === 200, 'HEAD must be supported.');
+$category = json_decode($router->dispatch('GET', '/category/my%2Dsql?sort=views&page=2')->body, true);
+$check($category['slug'] === 'my-sql', 'Route parameters must be decoded.');
+$check($category['query'] === ['sort' => 'views', 'page' => '2'], 'Query parameters must reach the handler.');
+$check($router->dispatch('GET', '/category/')->status === 404, 'A slug is required.');
+$check($router->dispatch('GET', '/category/php/extra')->status === 404, 'Routes must match the complete path.');
+$check($router->dispatch('POST', '/category/php')->status === 405, 'Category routes must reject POST.');
+
 
 $view->assign('appName', '<script>alert("test")</script>');
 $escaped = $router->dispatch('GET', '/')->body;
