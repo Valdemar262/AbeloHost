@@ -1,0 +1,88 @@
+:root {
+    color-scheme: light;
+    font-family: system-ui, sans-serif;
+    color: #202b3c;
+    background: #f5f7fa;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    line-height: 1.6;
+}
+
+a {
+    color: #2659ae;
+    text-underline-offset: .2em;
+}
+
+a:focus-visible {
+    outline: 3px solid #2659ae;
+    outline-offset: 4px;
+}
+
+.site-header, .container, .site-footer {
+    width: min(100% - 2rem, 68rem);
+    margin-inline: auto;
+}
+
+.site-header {
+    padding-block: 1.5rem;
+    border-bottom: 1px solid #dce2ea;
+}
+
+.brand {
+    color: inherit;
+    font-weight: 700;
+    font-size: 1.2rem;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+}
+
+.container {
+    padding-block: 3rem;
+    min-height: 65vh;
+}
+
+.panel {
+    padding: clamp(1.5rem, 5vw, 4rem);
+    background: #fff;
+    border: 1px solid #dce2ea;
+    border-radius: 1rem;
+}
+
+h1 {
+    margin: .5rem 0 1rem;
+    font-size: clamp(1.75rem, 5vw, 3rem);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+}
+
+p {
+    max-width: 42rem;
+}
+
+.eyebrow {
+    color: #52627a;
+}
+
+.site-footer {
+    padding-block: 1.5rem;
+    color: #52627a;
+    border-top: 1px solid #dce2ea;
+}
+
+.skip-link {
+    position: absolute;
+    top: -10rem;
+    left: 1rem;
+    padding: .75rem;
+    background: #fff;
+}
+
+.skip-link:focus {
+    top: 1rem;
+}
