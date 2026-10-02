@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Controller\HomeController;
+use App\Controller\ArticleController;
 use App\Controller\CategoryController;
+use App\Controller\HomeController;
 use App\Database;
 use App\Http\Response;
 use App\Http\Router;
@@ -36,6 +37,17 @@ try {
         $controller = new CategoryController($app['view'], new CategoryRepository($pdo), new PostRepository($pdo));
 
         return $controller->index($parameters['slug'], $query);
+    });
+    $router->get('/article/{slug}', static function (array $parameters) use ($app, $headOnly): Response {
+        $pdo = Database::connect($app['config']['database']);
+        $controller = new ArticleController(
+            $app['view'],
+            new CategoryRepository($pdo),
+            new PostRepository($pdo),
+            $pdo,
+        );
+
+        return $controller->show($parameters['slug'], !$headOnly);
     });
     $response = $router->dispatch(
         $_SERVER['REQUEST_METHOD'] ?? 'GET',

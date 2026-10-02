@@ -6,6 +6,7 @@ namespace App\Repository;
 
 use InvalidArgumentException;
 use PDO;
+use RuntimeException;
 use Throwable;
 
 final class PostRepository
@@ -37,6 +38,58 @@ final class PostRepository
         $statement->execute(['category_id' => $categoryId, 'published_before' => $publishedBefore]);
 
         return (int) $statement->fetchColumn();
+    }
+
+    public function findPublishedBySlug(string $slug, string $publishedBefore): ?array
+    {
+        $statement = $this->pdo->prepare(<<<'SQL'
+            SELECT id, slug, image_path, title, description, body, published_at, views
+            FROM posts
+            WHERE slug = :slug AND published_at <= :published_before
+            SQL);
+        $statement->execute(['slug' => $slug, 'published_before' => $publishedBefore]);
+
+        return $statement->fetch() ?: null;
+    }
+
+    public function incrementViews(int $postId): int
+    {
+        $statement = $this->pdo->prepare('UPDATE posts SET views = views + 1 WHERE id = :id');
+        $statement->execute(['id' => $postId]);
+
+        if ($statement->rowCount() !== 1) {
+            throw new RuntimeException('The article no longer exists.');
+        }
+
+        $statement = $this->pdo->prepare('SELECT views FROM posts WHERE id = :id');
+        $statement->execute(['id' => $postId]);
+
+        return (int) $statement->fetchColumn();
+    }
+
+    public function findRelated(int $postId, string $publishedBefore): array
+    {
+        $statement = $this->pdo->prepare(<<<'SQL'
+            SELECT p.id, p.slug, p.image_path, p.title, p.description, p.published_at, p.views
+            FROM posts p
+            JOIN (
+                SELECT candidate.post_id, COUNT(*) AS shared_categories
+                FROM post_category source
+                JOIN post_category candidate ON candidate.category_id = source.category_id
+                WHERE source.post_id = :source_id AND candidate.post_id <> :excluded_id
+                GROUP BY candidate.post_id
+            ) related ON related.post_id = p.id
+            WHERE p.published_at <= :published_before
+            ORDER BY related.shared_categories DESC, p.published_at DESC, p.id DESC
+            LIMIT 3
+            SQL);
+        $statement->execute([
+            'source_id' => $postId,
+            'excluded_id' => $postId,
+            'published_before' => $publishedBefore,
+        ]);
+
+        return $statement->fetchAll();
     }
 
     public function findPublishedByCategory(

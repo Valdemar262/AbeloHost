@@ -273,6 +273,53 @@ select:focus-visible {
     overflow-wrap: anywhere;
 }
 
+.article-detail {
+    max-width: 52rem;
+    margin-inline: auto;
+}
+
+.article-header {
+    margin-bottom: 2rem;
+}
+
+.article-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    padding: 0;
+    list-style: none;
+    overflow-wrap: anywhere;
+}
+
+.article-description {
+    color: #52627a;
+    font-size: 1.15rem;
+    overflow-wrap: anywhere;
+}
+
+.article-image {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 0.75rem;
+}
+
+.article-body {
+    max-width: 42rem;
+    margin: 2rem auto 0;
+    font-size: 1.1rem;
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+}
+
+.article-body p {
+    white-space: pre-line;
+}
+
+.related-posts {
+    margin-top: 3.5rem;
+}
+
 @media (max-width: 60rem) {
     .post-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
