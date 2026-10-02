@@ -1,0 +1,160 @@
+@use 'settings' as s;
+
+.panel {
+    padding: 4rem;
+    background: s.$surface;
+    border: 1px solid s.$border;
+    border-radius: 1rem;
+}
+
+.empty-state h2 {
+    margin-top: 0;
+}
+
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    min-height: 2.75rem;
+    padding: 0.7rem 1rem;
+    border: 1px solid s.$accent;
+    border-radius: 0.5rem;
+    background: s.$accent;
+    color: s.$surface;
+    font: inherit;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+
+    &-secondary {
+        background: transparent;
+        color: s.$accent;
+    }
+
+    &:hover {
+        background: s.$accent-hover;
+        color: s.$surface;
+    }
+}
+
+.post-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid s.$border;
+    border-radius: 0.75rem;
+    background: s.$surface;
+}
+
+.post-image-link,
+.post-image {
+    display: block;
+    width: 100%;
+}
+
+.post-image {
+    height: auto;
+    aspect-ratio: 5 / 3;
+    object-fit: cover;
+}
+
+.post-content {
+    flex: 1;
+    padding: 1.25rem;
+}
+
+.post-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1rem;
+    color: s.$muted;
+    font-size: 0.85rem;
+}
+
+.post-title {
+    margin: 0.75rem 0;
+    font-size: 1.2rem;
+    line-height: 1.4;
+
+    a {
+        color: inherit;
+        text-decoration: none;
+
+        &:hover {
+            color: s.$accent;
+            text-decoration: underline;
+        }
+    }
+}
+
+.post-description {
+    margin: 0;
+    color: s.$muted;
+}
+
+.breadcrumbs,
+.sort-form,
+.pagination {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.breadcrumbs {
+    margin-bottom: 1.5rem;
+    color: s.$muted;
+}
+
+.sort-form {
+    select {
+        min-width: 0;
+        max-width: 100%;
+        min-height: 2.75rem;
+        padding: 0.7rem;
+        border: 1px solid s.$control-border;
+        border-radius: 0.5rem;
+        background: s.$surface;
+        color: s.$text;
+        font: inherit;
+    }
+}
+
+.pagination {
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    padding: 0.5rem 0.85rem;
+    border: 1px solid s.$border;
+    border-radius: 0.5rem;
+    background: s.$surface;
+    text-align: center;
+    text-decoration: none;
+
+    &:is(a):hover {
+        border-color: s.$accent;
+        background: s.$background;
+    }
+
+    &.current {
+        border-color: s.$accent;
+        background: s.$accent;
+        color: s.$surface;
+    }
+}
+
+.page-summary {
+    width: 100%;
+    color: s.$muted;
+    text-align: center;
+    font-size: 0.85rem;
+}
