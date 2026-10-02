@@ -54,17 +54,27 @@ final class PostRepository
 
     public function incrementViews(int $postId): int
     {
-        $statement = $this->pdo->prepare('UPDATE posts SET views = views + 1 WHERE id = :id');
-        $statement->execute(['id' => $postId]);
+        $this->pdo->beginTransaction();
 
-        if ($statement->rowCount() !== 1) {
-            throw new RuntimeException('The article no longer exists.');
+        try {
+            $statement = $this->pdo->prepare('UPDATE posts SET views = views + 1 WHERE id = :id');
+            $statement->execute(['id' => $postId]);
+
+            if ($statement->rowCount() !== 1) {
+                throw new RuntimeException('The article no longer exists.');
+            }
+
+            $statement = $this->pdo->prepare('SELECT views FROM posts WHERE id = :id');
+            $statement->execute(['id' => $postId]);
+            $views = (int) $statement->fetchColumn();
+            $this->pdo->commit();
+
+            return $views;
+        } finally {
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
         }
-
-        $statement = $this->pdo->prepare('SELECT views FROM posts WHERE id = :id');
-        $statement->execute(['id' => $postId]);
-
-        return (int) $statement->fetchColumn();
     }
 
     public function findRelated(int $postId, string $publishedBefore): array

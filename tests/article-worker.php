@@ -18,7 +18,6 @@ $controller = new ArticleController(
     $app['view'],
     new CategoryRepository($pdo),
     new PostRepository($pdo),
-    $pdo,
 );
 $views = [];
 

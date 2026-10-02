@@ -44,7 +44,6 @@ try {
             $app['view'],
             new CategoryRepository($pdo),
             new PostRepository($pdo),
-            $pdo,
         );
 
         return $controller->show($parameters['slug'], !$headOnly);

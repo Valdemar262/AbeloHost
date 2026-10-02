@@ -20,7 +20,7 @@ return static function (PDO $pdo, string $root, array $data): int {
     $posts = new PostRepository($pdo);
     $view = new View($root . '/templates', $root . '/var/smarty');
     $view->assign('appName', 'AbeloHost Blog');
-    $controller = new ArticleController($view, $categories, $posts, $pdo);
+    $controller = new ArticleController($view, $categories, $posts);
     $categoryIds = [];
     $postIds = [];
     $workers = [];
@@ -123,7 +123,7 @@ return static function (PDO $pdo, string $root, array $data): int {
         $check(array_column($posts->findRelated($single, $cutoff), 'id') === [$peer2, $peer], 'Two available peers must be shown.');
 
         $brokenView = new View($root . '/templates/missing', $root . '/var/smarty');
-        $brokenController = new ArticleController($brokenView, $categories, $posts, $pdo);
+        $brokenController = new ArticleController($brokenView, $categories, $posts);
         $failed = false;
 
         try {
@@ -133,8 +133,24 @@ return static function (PDO $pdo, string $root, array $data): int {
         }
 
         $check($failed, 'A missing article template must fail rendering.');
-        $check(!$pdo->inTransaction(), 'Render failure must close its transaction.');
-        $check((int) $posts->findBySlug('article-check-target')['views'] === 2, 'Render failure must roll back the view increment.');
+        $check(!$pdo->inTransaction(), 'Render failure must not leave a transaction open.');
+        $check(
+            (int) $posts->findBySlug('article-check-target')['views'] === 3,
+            'Render failure must not undo an already committed view.',
+        );
+
+        $check($posts->incrementViews($target) === 4, 'The counter must return its own updated value.');
+        $check(!$pdo->inTransaction(), 'The counter must commit before returning to its caller.');
+        $missingFailed = false;
+
+        try {
+            $posts->incrementViews(PHP_INT_MAX);
+        } catch (RuntimeException) {
+            $missingFailed = true;
+        }
+
+        $check($missingFailed, 'A missing article must reject the increment.');
+        $check(!$pdo->inTransaction(), 'A failed increment must roll back its transaction.');
 
         for ($index = 0; $index < 4; $index++) {
             $process = proc_open([PHP_BINARY, $root . '/tests/article-worker.php'], [

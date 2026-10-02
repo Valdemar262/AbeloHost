@@ -1,0 +1,16 @@
+{
+    "name": "abelohost-blog-styles",
+    "private": true,
+    "type": "module",
+    "engines": {
+        "node": ">=20.19.0"
+    },
+    "scripts": {
+        "styles:build": "sass --no-source-map --no-charset --no-error-css --style=expanded resources/scss/app.scss public/assets/css/app.css",
+        "styles:watch": "npm run styles:build -- --watch",
+        "styles:check": "node scripts/check-styles.mjs"
+    },
+    "devDependencies": {
+        "sass": "1.105.1"
+    }
+}
