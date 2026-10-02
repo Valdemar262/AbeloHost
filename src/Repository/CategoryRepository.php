@@ -20,6 +20,20 @@ final class CategoryRepository
         return $statement->fetch() ?: null;
     }
 
+    public function findByPostId(int $postId): array
+    {
+        $statement = $this->pdo->prepare(<<<'SQL'
+            SELECT c.id, c.slug, c.name, c.description
+            FROM categories c
+            JOIN post_category pc ON pc.category_id = c.id
+            WHERE pc.post_id = :post_id
+            ORDER BY c.name, c.id
+            SQL);
+        $statement->execute(['post_id' => $postId]);
+
+        return $statement->fetchAll();
+    }
+
     public function findWithLatestPosts(string $publishedBefore): array
     {
         $statement = $this->pdo->prepare(<<<'SQL'

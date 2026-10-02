@@ -97,4 +97,23 @@ $categoryHead = request($baseUrl, '/category/php', 'HEAD');
 $check($categoryHead['status'] === 200 && $categoryHead['body'] === '', 'Category HEAD must have no body.');
 $check(request($baseUrl, '/category/php', 'POST')['status'] === 405, 'Category POST must return 405.');
 
+$article = request($baseUrl, '/article/strict-types');
+$check($article['status'] === 200, 'Published articles must be reachable.');
+$check(str_contains($article['headers'], 'Cache-Control: no-store'), 'Article responses must prevent caching.');
+$check(preg_match('/data-article-views>(\d+)</', $article['body'], $initialViews) === 1, 'The view count must be visible.');
+$articleHead = request($baseUrl, '/article/strict-types', 'HEAD');
+$check($articleHead['status'] === 200 && $articleHead['body'] === '', 'Article HEAD must have no body.');
+$articlePost = request($baseUrl, '/article/strict-types', 'POST');
+$check($articlePost['status'] === 405 && str_contains($articlePost['headers'], 'Allow: GET, HEAD'), 'Article POST must return 405.');
+
+foreach (['GET', 'HEAD'] as $method) {
+    $check(request($baseUrl, '/article/missing', $method)['status'] === 404, 'Missing articles must return 404.');
+    $check(request($baseUrl, '/article/future-blog-release', $method)['status'] === 404, 'Scheduled articles must return 404.');
+}
+
+$articleAgain = request($baseUrl, '/article/strict-types');
+$check(preg_match('/data-article-views>(\d+)</', $articleAgain['body'], $nextViews) === 1, 'Reload must show the counter.');
+$check((int) $nextViews[1] === (int) $initialViews[1] + 1, 'Only the second GET may add a view.');
+$check(substr_count($article['body'], 'data-post-id=') === 3, 'Article HTTP responses must include related cards.');
+
 fwrite(STDOUT, "HTTP checks passed: {$checks}.\n");

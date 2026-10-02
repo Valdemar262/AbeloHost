@@ -153,6 +153,8 @@ $check($seeder->run($data) === ['categories' => 0, 'posts' => 0], 'A repeated se
 $check($snapshot() === $before, 'A repeated seed must not change records or relationships.');
 $catalogChecks = require __DIR__ . '/catalog.php';
 $checks += $catalogChecks($pdo, $root, $data);
+$articleChecks = require __DIR__ . '/articles.php';
+$checks += $articleChecks($pdo, $root, $data);
 $check($categories->findBySlug("' OR 1=1 --") === null, 'Category lookup must bind its parameters.');
 $check($posts->findBySlug("' OR 1=1 --") === null, 'Post lookup must bind its parameters.');
 $check($posts->findBySlug('missing') === null, 'Unknown posts must return null.');
